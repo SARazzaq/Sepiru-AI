@@ -87,22 +87,10 @@ with st.sidebar:
 
     provider = st.selectbox(
         "🧠 AI Provider",
-        ["groq", "openai", "anthropic", "ollama"],
-        index=["groq", "openai", "anthropic", "ollama"].index(
-            os.getenv("AI_PROVIDER", "groq")
-        ) if os.getenv("AI_PROVIDER", "groq") in ["groq", "openai", "anthropic", "ollama"] else 0,
+        ["groq", "ollama"],
+        index=0,
     )
     os.environ["AI_PROVIDER"] = provider
-
-    if provider == "groq":
-        k = st.text_input("Groq API Key", type="password", value=os.getenv("GROQ_API_KEY", ""))
-        if k: os.environ["GROQ_API_KEY"] = k
-    elif provider == "openai":
-        k = st.text_input("OpenAI API Key", type="password", value=os.getenv("OPENAI_API_KEY", ""))
-        if k: os.environ["OPENAI_API_KEY"] = k
-    elif provider == "anthropic":
-        k = st.text_input("Anthropic API Key", type="password", value=os.getenv("ANTHROPIC_API_KEY", ""))
-        if k: os.environ["ANTHROPIC_API_KEY"] = k
 
     st.divider()
     try:
