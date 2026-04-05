@@ -85,11 +85,8 @@ st.markdown("""
 with st.sidebar:
     st.markdown("## ⚙️ Configuration")
 
-    provider = st.selectbox(
-        "🧠 AI Provider",
-        ["groq", "ollama"],
-        index=0,
-    )
+    # Provider fixed to groq — no dropdown needed
+    provider = "groq"
     os.environ["AI_PROVIDER"] = provider
 
     st.divider()
@@ -101,8 +98,6 @@ with st.sidebar:
             st.session_state.ai_ready = True
         else:
             st.error(f"🔴 {msg}")
-            if provider == "ollama":
-                st.code("ollama serve", language="bash")
             st.session_state.ai_ready = False
     except Exception as e:
         st.error(str(e))
@@ -112,19 +107,16 @@ with st.sidebar:
     if ai and st.session_state.ai_ready:
         models = ai.get_available_models()
         if models:
-            ai.model = st.selectbox("🤖 Model (Analysis)", models)
+            ai.model = st.selectbox("🤖 Model", models)
             st.session_state.selected_model = ai.model
             chat_model = st.selectbox(
                 "💬 Chat Model",
                 models,
-                index=models.index("qwen2.5:14b") if "qwen2.5:14b" in models else 0,
+                index=0,
                 help="Used only in the Chat tab"
             )
         else:
             chat_model = ai.model
-            if provider == "ollama":
-                st.warning("No models found.")
-                st.code("ollama pull llama3.1:8b", language="bash")
     else:
         chat_model = None
 
