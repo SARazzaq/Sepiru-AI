@@ -724,15 +724,7 @@ def apex_motion_engine() -> str:
     }
 
     function addParallax(){
-        const header=doc.querySelector('.app-header');
-        if(!header||header._px)return;header._px=true;
-        doc.addEventListener('mousemove',e=>{
-            const dx=(e.clientX/window.innerWidth-.5)*10;
-            const dy=(e.clientY/window.innerHeight-.5)*5;
-            header.style.transform=`perspective(1400px) rotateX(${-dy*.25}deg) rotateY(${dx*.18}deg)`;
-            header.style.transition='transform .08s ease';
-        });
-        doc.addEventListener('mouseleave',()=>{header.style.transform='';header.style.transition='transform .9s cubic-bezier(.34,1.56,.64,1)';});
+        // Disabled — causes header rotation on mouse move
     }
 
     function runAll(){addReveal();addTilt();addMagnetic();addCounters();addTabRipple();addChartStagger();addParallax();}

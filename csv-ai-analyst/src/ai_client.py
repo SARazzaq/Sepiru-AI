@@ -41,7 +41,7 @@ class AIClient:
             try:
                 from groq import Groq
                 self._client = Groq(api_key=_get_secret("GROQ_API_KEY"))
-                self.model = _get_secret("GROQ_MODEL", "llama-3.1-70b-versatile")
+                self.model = _get_secret("GROQ_MODEL", "llama-3.3-70b-versatile")
             except ImportError:
                 raise ImportError("Run: pip install groq")
 
