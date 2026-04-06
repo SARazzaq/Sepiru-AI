@@ -1,5 +1,6 @@
 """
-Vision AI Page — analyze image datasets with Ollama vision models
+Vision AI Page — secure version with path traversal protection.
+Replace your existing pages/3_🖼️_Vision_AI.py with this file.
 """
 
 import streamlit as st
@@ -9,8 +10,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from src.ui_components import load_all_styles
-load_all_styles("assets")
+with open("assets/style.css", encoding="utf-8") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 from src.vision_analyzer import (
     get_available_vision_models, analyze_image_stream,
@@ -20,13 +21,12 @@ from src.vision_analyzer import (
 st.markdown("""
 <div class='app-header'>
     <h1>🖼️ Vision <span>AI</span></h1>
-    <p>Analyze image datasets &nbsp;·&nbsp; Free local Ollama vision models</p>
+    <p>Analyze image datasets using free local Ollama vision models</p>
 </div>
 """, unsafe_allow_html=True)
 
 # ── Model setup ───────────────────────────────────────────────────────────────
 st.subheader("🧠 Vision Model Setup")
-
 available = get_available_vision_models()
 
 if not available:
@@ -45,15 +45,10 @@ with col_i:
 
 st.markdown("---")
 
-# ── Mode selection ────────────────────────────────────────────────────────────
-mode = st.radio(
-    "Mode",
-    ["📁 Folder Analysis", "🖼️ Single Image Chat"],
-    horizontal=True
-)
+mode = st.radio("Mode", ["📁 Folder Analysis", "🖼️ Single Image Chat"], horizontal=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# MODE 1 — FOLDER ANALYSIS
+# MODE 1 — FOLDER ANALYSIS (with path traversal protection)
 # ─────────────────────────────────────────────────────────────────────────────
 if mode == "📁 Folder Analysis":
     st.subheader("📁 Image Folder Analysis")
@@ -64,16 +59,18 @@ if mode == "📁 Folder Analysis":
     )
 
     if folder_path:
-        images = scan_image_folder(folder_path)
+        # ── Secure scan ───────────────────────────────────────────
+        images, error = scan_image_folder(folder_path)
 
-        if not images:
-            st.error("No images found in that folder. "
-                     f"Supported formats: {', '.join(IMAGE_EXTENSIONS)}")
+        if error:
+            st.error(f"❌ {error}")
+        elif not images:
+            st.warning(f"No images found. Supported formats: {', '.join(IMAGE_EXTENSIONS)}")
         else:
             st.success(f"✅ Found {len(images)} images")
 
             import pandas as pd
-            img_df = pd.DataFrame(images)[["filename","ext","size_kb"]]
+            img_df = pd.DataFrame(images)[["filename", "ext", "size_kb"]]
             st.dataframe(img_df, use_container_width=True, hide_index=True)
 
             # Preview grid
@@ -89,8 +86,6 @@ if mode == "📁 Folder Analysis":
                         st.write(img["filename"])
 
             st.markdown("---")
-
-            # Analysis options
             st.subheader("🤖 Batch AI Analysis")
 
             analysis_type = st.selectbox("Analysis Type", [
@@ -103,10 +98,10 @@ if mode == "📁 Folder Analysis":
             ])
 
             prompts = {
-                "General description":         "Describe this image in detail.",
-                "Classify the image content":  "What category does this image belong to? Give a single label.",
-                "Detect objects present":       "List all objects visible in this image.",
-                "Describe colors and composition": "Describe the colors, lighting, and composition of this image.",
+                "General description":          "Describe this image in detail.",
+                "Classify the image content":   "What category does this image belong to? Give a single label.",
+                "Detect objects present":        "List all objects visible in this image.",
+                "Describe colors and composition": "Describe the colors, lighting, and composition.",
                 "Identify any text in the image": "Extract and list all text visible in this image.",
                 "Custom prompt": "",
             }
@@ -117,12 +112,9 @@ if mode == "📁 Folder Analysis":
                 prompt = prompts[analysis_type]
                 st.info(f"Prompt: *{prompt}*")
 
-            max_images = st.slider(
-                "Max images to analyze", 1, len(images), min(5, len(images))
-            )
+            max_images = st.slider("Max images to analyze", 1, len(images), min(5, len(images)))
 
-            if st.button("▶️ Analyze Images", type="primary",
-                         use_container_width=True):
+            if st.button("▶️ Analyze Images", type="primary", use_container_width=True):
                 if not prompt:
                     st.warning("Please enter a prompt.")
                 else:
@@ -145,15 +137,12 @@ if mode == "📁 Folder Analysis":
 
                     result_df = pd.DataFrame(results)
                     st.success(f"✅ Analyzed {len(results)} images!")
-                    st.dataframe(result_df, use_container_width=True,
-                                 hide_index=True)
+                    st.dataframe(result_df, use_container_width=True, hide_index=True)
 
                     csv = result_df.to_csv(index=False).encode("utf-8")
-                    st.download_button(
-                        "📥 Download Results CSV", csv,
-                        file_name="vision_analysis.csv", mime="text/csv",
-                        use_container_width=True
-                    )
+                    st.download_button("📥 Download Results CSV", csv,
+                                       file_name="vision_analysis.csv",
+                                       mime="text/csv", use_container_width=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # MODE 2 — SINGLE IMAGE CHAT
@@ -163,14 +152,17 @@ else:
 
     uploaded_img = st.file_uploader(
         "Upload an image",
-        type=["jpg","jpeg","png","bmp","webp"]
+        type=["jpg", "jpeg", "png", "bmp", "webp"]
     )
 
     if uploaded_img:
-        import tempfile
-        import os
+        # ── File size check ───────────────────────────────────────
+        size_mb = len(uploaded_img.getvalue()) / (1024 * 1024)
+        if size_mb > 10:
+            st.error(f"❌ Image too large ({size_mb:.1f} MB). Max 10 MB.")
+            st.stop()
 
-        # Save to temp file
+        import tempfile
         suffix = Path(uploaded_img.name).suffix
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             tmp.write(uploaded_img.read())
@@ -179,12 +171,10 @@ else:
         col_img, col_chat = st.columns([1, 2])
 
         with col_img:
-            st.image(tmp_path, caption=uploaded_img.name,
-                     use_container_width=True)
-            st.caption(f"Size: {os.path.getsize(tmp_path)//1024} KB")
+            st.image(tmp_path, caption=uploaded_img.name, use_container_width=True)
+            st.caption(f"Size: {size_mb:.2f} MB")
 
         with col_chat:
-            # Chat history for this image
             if "vision_chat" not in st.session_state:
                 st.session_state.vision_chat = []
 
@@ -195,25 +185,33 @@ else:
             vision_input = st.chat_input("Ask anything about this image…")
 
             if vision_input:
-                with st.chat_message("user"):
-                    st.markdown(vision_input)
-                st.session_state.vision_chat.append(
-                    {"role": "user", "content": vision_input}
-                )
+                # Sanitise input
+                from src.utils import sanitise_user_input, check_rate_limit
+                allowed, rate_msg = check_rate_limit()
+                if not allowed:
+                    st.warning(f"⏳ {rate_msg}")
+                else:
+                    clean_input, flagged = sanitise_user_input(vision_input)
+                    if flagged:
+                        st.warning("⚠️ Message cleaned.")
 
-                with st.chat_message("assistant"):
-                    placeholder = st.empty()
-                    response    = ""
-                    for chunk in analyze_image_stream(
-                        tmp_path, vision_input, selected_model
-                    ):
-                        response += chunk
-                        placeholder.markdown(response + "▌")
-                    placeholder.markdown(response)
+                    with st.chat_message("user"):
+                        st.markdown(clean_input)
+                    st.session_state.vision_chat.append(
+                        {"role": "user", "content": clean_input}
+                    )
 
-                st.session_state.vision_chat.append(
-                    {"role": "assistant", "content": response}
-                )
+                    with st.chat_message("assistant"):
+                        placeholder = st.empty()
+                        response    = ""
+                        for chunk in analyze_image_stream(tmp_path, clean_input, selected_model):
+                            response += chunk
+                            placeholder.markdown(response + "▌")
+                        placeholder.markdown(response)
+
+                    st.session_state.vision_chat.append(
+                        {"role": "assistant", "content": response}
+                    )
 
             if st.session_state.vision_chat:
                 if st.button("🗑️ Clear Chat", key="clear_vision"):
@@ -227,7 +225,6 @@ else:
                     "What objects can you identify?",
                     "Is there any text in this image?",
                     "What category does this image belong to?",
-                    "Describe this image for someone who cannot see it.",
                 ]:
                     if st.button(s, key=f"vis_{s}"):
                         st.session_state.vision_chat.append(

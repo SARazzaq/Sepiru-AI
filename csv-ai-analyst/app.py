@@ -20,7 +20,8 @@ from src.ai_client     import AIClient
 from src.data_analyzer import DataAnalyzer
 from src.data_cleaner  import DataCleaner
 from src.forecaster    import Forecaster
-from src.utils         import load_data, build_system_prompt, build_analysis_prompt
+from src.utils import (load_data, build_system_prompt, build_analysis_prompt, sanitise_user_input, sanitise_context, check_rate_limit)
+
 
 load_dotenv()
 
@@ -524,15 +525,26 @@ else:
                     st.markdown(msg["content"])
 
             user_input = st.chat_input("Ask anything about your data…")
-
             if user_input:
-                with st.chat_message("user"):
-                    st.markdown(user_input)
-                st.session_state.chat_history.append(
-                    {"role": "user", "content": user_input}
-                )
+                # ── Rate limit check ──────────────────────────────────
+                allowed, rate_msg = check_rate_limit()
+                if not allowed:
+                    st.warning(f"⏳ {rate_msg}")
+                else:
+                    # ── Sanitise input ────────────────────────────────
+                    clean_input, flagged = sanitise_user_input(user_input)
+                    if flagged:
+                        st.warning("⚠️ Your message contained disallowed instructions and was cleaned.")
 
-                context = extract_relevant_context(df, user_input)
+                    with st.chat_message("user"):
+                        st.markdown(clean_input)
+                    st.session_state.chat_history.append(
+                        {"role": "user", "content": clean_input}
+                    )
+
+                    context = extract_relevant_context(df, clean_input)
+                    context = sanitise_context(context)  # truncate context to safe size
+
                 recent  = st.session_state.chat_history[-10:]
                 history = ""
                 for m in recent[:-1]:
@@ -861,14 +873,22 @@ Are the metrics good? What should they watch out for?
                 )
 
                 if compare_input:
-                    with st.chat_message("user"):
-                        st.markdown(compare_input)
-                    st.session_state.compare_chat_history.append(
-                        {"role": "user", "content": compare_input}
-                    )
+                    allowed, rate_msg = check_rate_limit()
+                    if not allowed:
+                        st.warning(f"⏳ {rate_msg}")
+                    else:
+                        clean_compare, flagged = sanitise_user_input(compare_input)
+                        if flagged:
+                            st.warning("⚠️ Your message contained disallowed instructions and was cleaned.")
 
-                    context1 = extract_relevant_context(df,  compare_input)
-                    context2 = extract_relevant_context(df2, compare_input)
+                        with st.chat_message("user"):
+                            st.markdown(clean_compare)
+                        st.session_state.compare_chat_history.append(
+                            {"role": "user", "content": clean_compare}
+                        )
+                        context1 = sanitise_context(extract_relevant_context(df,  clean_compare))
+                        context2 = sanitise_context(extract_relevant_context(df2, clean_compare))
+
 
                     recent  = st.session_state.compare_chat_history[-10:]
                     history = ""
