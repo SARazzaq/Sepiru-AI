@@ -194,7 +194,8 @@ def toast(title: str, message: str, icon: str = "✦") -> str:
 
 # ── CSS + Motion loader ───────────────────────────────────────────────────────
 def load_all_styles(base_path: str = "assets"):
-    """Load all CSS + inject cursor, scroll animations, and aurora directly."""
+    """Load all CSS + inject cursor and animations on every page."""
+    import streamlit.components.v1 as components
 
     files = ["style.css", "components.css", "animations.css"]
     combined = ""
@@ -206,6 +207,6 @@ def load_all_styles(base_path: str = "assets"):
             pass
     st.markdown(f"<style>{combined}</style>", unsafe_allow_html=True)
 
-    # Inject motion engine directly — no iframe, works on Streamlit Cloud
-    from src.animations import direct_motion_inject
-    st.markdown(direct_motion_inject(), unsafe_allow_html=True)
+    # JS must go through components.html — st.markdown strips <script> tags
+    from src.animations import apex_motion_engine
+    components.html(apex_motion_engine(), height=0, scrolling=False)

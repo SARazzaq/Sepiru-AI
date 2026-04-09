@@ -545,10 +545,18 @@ def apex_motion_engine() -> str:
 (function(){
     let doc;
     try{doc=window.parent.document;}catch(e){return;}
-    if(doc.__apexV3)return;
-    doc.__apexV3=true;
+
+    // Remove old cursor elements if they exist (page navigation re-init)
+    ['_CD','_CR','_SPB','_curtain'].forEach(id=>{
+        const old=doc.getElementById(id);
+        if(old)old.remove();
+    });
 
     const S=doc.createElement('style');
+    S.id='_apexStyles';
+    // Remove old style if exists
+    const oldS=doc.getElementById('_apexStyles');
+    if(oldS)oldS.remove();
     S.textContent=`
         *{cursor:none!important;}
         #_CD{
