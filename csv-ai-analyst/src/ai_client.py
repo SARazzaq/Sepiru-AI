@@ -37,7 +37,7 @@ class AIClient:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=_get_secret("GEMINI_API_KEY"))
-                self.model = _get_secret("GEMINI_MODEL", "gemini-1.5-flash")
+                self.model = _get_secret("GEMINI_MODEL", "gemini-2.0-flash")
                 self._genai = genai
                 self._client = genai.GenerativeModel(self.model)
             except ImportError:
