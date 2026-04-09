@@ -101,7 +101,6 @@ load_all_styles("assets")
 # ── Aurora background ─────────────────────────────────────────────────────────
 components.html(aurora_background(), height=1, scrolling=False)
 
-
 # ── Session state ─────────────────────────────────────────────────────────────
 DEFAULTS = {
     "df": None, "clean_df": None, "filename": None,
