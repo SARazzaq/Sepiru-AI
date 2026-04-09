@@ -35,15 +35,15 @@ def _secret(key: str, fallback: str = "") -> str:
         return os.getenv(key, fallback)
 
 # Seed env from secrets so AIClient picks them up via os.getenv
-for _k in ["AI_PROVIDER","GEMINI_API_KEY","GEMINI_MODEL",
-           "GROQ_API_KEY","GROQ_MODEL",
+for _k in ["AI_PROVIDER","GROQ_API_KEY","GROQ_MODEL",
+           "GEMINI_API_KEY","GEMINI_MODEL",
            "OPENAI_API_KEY","OPENAI_MODEL","ANTHROPIC_API_KEY","ANTHROPIC_MODEL"]:
     _v = _secret(_k)
     if _v:
         os.environ[_k] = _v
 
 if not os.environ.get("AI_PROVIDER"):
-    os.environ["AI_PROVIDER"] = "gemini"
+    os.environ["AI_PROVIDER"] = "groq"
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -89,7 +89,7 @@ if not can_proceed():
                         font-size:2rem;font-weight:400;">{reset_time_utc()}</div>
         </div>
         <p style="color:#3a3a52;font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;">
-            Powered by Gemini Free Tier · 1,500 req/day
+            Powered by Groq Free Tier · 14,400 req/day
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -127,8 +127,8 @@ st.markdown("""
 with st.sidebar:
     st.markdown("## ⚙️ Configuration")
 
-    # Provider fixed to gemini
-    provider = "gemini"
+    # Provider fixed to groq
+    provider = "groq"
     os.environ["AI_PROVIDER"] = provider
 
     st.divider()

@@ -9,8 +9,8 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Stop at 1,400 — keeps 100 req buffer before Google cuts us off
-DAILY_LIMIT = 1400
+# Groq free tier: 14,400 req/day — stop at 14,000 to keep 400 buffer
+DAILY_LIMIT = 14000
 _STORE = Path(__file__).parent.parent / ".quota_state.json"
 
 

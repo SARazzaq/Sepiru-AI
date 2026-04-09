@@ -1,5 +1,5 @@
 """
-Multi-provider AI client: Gemini (primary/free), Groq, OpenAI, Anthropic, Ollama.
+Multi-provider AI client: Groq (primary/free), Gemini, OpenAI, Anthropic, Ollama.
 """
 
 import os
@@ -23,17 +23,25 @@ def _get_secret(key: str, fallback: str = "") -> str:
 
 
 class AIClient:
-    PROVIDERS = ["gemini", "groq", "openai", "anthropic", "ollama"]
+    PROVIDERS = ["groq", "gemini", "openai", "anthropic", "ollama"]
 
     def __init__(self):
-        self.provider = _get_secret("AI_PROVIDER", os.getenv("AI_PROVIDER", "gemini")).lower()
+        self.provider = _get_secret("AI_PROVIDER", os.getenv("AI_PROVIDER", "groq")).lower()
         self.temperature = float(os.getenv("TEMPERATURE", 0.3))
         self.max_tokens = int(os.getenv("MAX_TOKENS", 3000))
         self._client = None
         self._init_client()
 
     def _init_client(self):
-        if self.provider == "gemini":
+        if self.provider == "groq":
+            try:
+                from groq import Groq
+                self._client = Groq(api_key=_get_secret("GROQ_API_KEY"))
+                self.model = _get_secret("GROQ_MODEL", "llama-3.3-70b-versatile")
+            except ImportError:
+                raise ImportError("Run: pip install groq")
+
+        elif self.provider == "gemini":
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=_get_secret("GEMINI_API_KEY"))
@@ -42,14 +50,6 @@ class AIClient:
                 self._client = genai.GenerativeModel(self.model)
             except ImportError:
                 raise ImportError("Run: pip install google-generativeai")
-
-        elif self.provider == "groq":
-            try:
-                from groq import Groq
-                self._client = Groq(api_key=_get_secret("GROQ_API_KEY"))
-                self.model = _get_secret("GROQ_MODEL", "llama-3.3-70b-versatile")
-            except ImportError:
-                raise ImportError("Run: pip install groq")
 
         elif self.provider == "openai":
             try:
@@ -74,12 +74,15 @@ class AIClient:
 
     def check_connection(self) -> tuple[bool, str]:
         try:
-            if self.provider == "gemini":
-                # Tiny test call
+            if self.provider == "groq":
+                self._client.models.list()
+                return True, f"Groq · {self.model}"
+
+            elif self.provider == "gemini":
                 r = self._client.generate_content("hi")
                 from src.quota_guard import increment
                 increment(1)
-                return True, f"Gemini connected · {self.model}"
+                return True, f"Gemini · {self.model}"
 
             elif self.provider == "ollama":
                 r = requests.get(f"{self.base_url}/api/tags", timeout=5)
@@ -87,10 +90,6 @@ class AIClient:
                     models = [m["name"] for m in r.json().get("models", [])]
                     return True, f"Ollama · {len(models)} model(s)"
                 return False, "Ollama error"
-
-            elif self.provider == "groq":
-                self._client.models.list()
-                return True, f"Groq · {self.model}"
 
             elif self.provider == "openai":
                 self._client.models.list()
@@ -107,8 +106,6 @@ class AIClient:
             return False, str(e)
 
     def get_available_models(self) -> list[str]:
-        if self.provider == "gemini":
-            return [self.model]
         if self.provider == "ollama":
             try:
                 r = requests.get(f"{self.base_url}/api/tags", timeout=5)
@@ -121,11 +118,13 @@ class AIClient:
 
     def generate(self, prompt: str, system: str = "") -> str:
         try:
-            if self.provider == "gemini":
+            if self.provider == "groq":
+                return self._openai_style_generate(self._client, prompt, system)
+            elif self.provider == "gemini":
                 return self._gemini_generate(prompt, system)
             elif self.provider == "ollama":
                 return self._ollama_generate(prompt, system)
-            elif self.provider in ("groq", "openai"):
+            elif self.provider in ("openai",):
                 return self._openai_style_generate(self._client, prompt, system)
             elif self.provider == "anthropic":
                 return self._anthropic_generate(prompt, system)
@@ -134,11 +133,13 @@ class AIClient:
 
     def generate_stream(self, prompt: str, system: str = "") -> Generator[str, None, None]:
         try:
-            if self.provider == "gemini":
+            if self.provider == "groq":
+                yield from self._openai_style_stream(self._client, prompt, system)
+            elif self.provider == "gemini":
                 yield from self._gemini_stream(prompt, system)
             elif self.provider == "ollama":
                 yield from self._ollama_stream(prompt, system)
-            elif self.provider in ("groq", "openai"):
+            elif self.provider in ("openai",):
                 yield from self._openai_style_stream(self._client, prompt, system)
             elif self.provider == "anthropic":
                 yield from self._anthropic_stream(prompt, system)
