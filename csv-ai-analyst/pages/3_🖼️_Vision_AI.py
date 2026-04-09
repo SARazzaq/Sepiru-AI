@@ -1,6 +1,5 @@
 """
-Vision AI Page — secure version with path traversal protection.
-Replace your existing pages/3_🖼️_Vision_AI.py with this file.
+Vision AI Page — analyze image datasets with Ollama vision models.
 """
 
 import streamlit as st
@@ -10,8 +9,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-with open("assets/style.css", encoding="utf-8") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+from src.ui_components import load_all_styles
+load_all_styles("assets")
 
 from src.vision_analyzer import (
     get_available_vision_models, analyze_image_stream,
