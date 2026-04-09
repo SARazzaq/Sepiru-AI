@@ -95,13 +95,11 @@ if not can_proceed():
     """, unsafe_allow_html=True)
     st.stop()
 
-# ── Load all styles ───────────────────────────────────────────────────────────
+# ── Load all styles + motion engine ──────────────────────────────────────────
 load_all_styles("assets")
 
-# ── Particle background ───────────────────────────────────────────────────────
-#components.html(particle_background(), height=0)
+# ── Aurora background ─────────────────────────────────────────────────────────
 components.html(aurora_background(), height=1, scrolling=False)
-components.html(apex_motion_engine(), height=1, scrolling=False)
 
 
 # ── Session state ─────────────────────────────────────────────────────────────

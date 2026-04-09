@@ -727,9 +727,100 @@ def apex_motion_engine() -> str:
         // Disabled — causes header rotation on mouse move
     }
 
-    function runAll(){addReveal();addTilt();addMagnetic();addCounters();addTabRipple();addChartStagger();addParallax();}
+    /* ══════════════════════════════════════
+       SCROLL-DRIVEN ANIMATIONS
+    ══════════════════════════════════════ */
+    function addScrollAnimations(){
+        if(doc.__scrollDone)return;
+        doc.__scrollDone=true;
+
+        /* Staggered reveal on scroll */
+        const sio=new IntersectionObserver((entries)=>{
+            entries.forEach((e,i)=>{
+                if(e.isIntersecting){
+                    const delay=e.target.dataset.delay||i*60;
+                    setTimeout(()=>{
+                        e.target.style.opacity='1';
+                        e.target.style.transform='translateY(0) scale(1)';
+                        e.target.style.filter='blur(0)';
+                    },parseInt(delay));
+                    sio.unobserve(e.target);
+                }
+            });
+        },{threshold:0.06,rootMargin:'0px 0px -40px 0px'});
+
+        /* Apply to all major content blocks */
+        const SCROLL_SELS=[
+            '.stMarkdown h2','.stMarkdown h3',
+            '[data-testid="stMetric"]',
+            '[data-testid="stDataFrame"]',
+            '.js-plotly-plot',
+            '[data-testid="stExpander"]',
+            '.metric-card','.glass-card','.insight-box',
+            '[data-testid="stDownloadButton"]',
+            '.stSuccess','.stInfo','.stWarning','.stError',
+        ];
+
+        function applyScrollReveal(){
+            SCROLL_SELS.forEach((sel,si)=>{
+                doc.querySelectorAll(sel).forEach((el,ei)=>{
+                    if(el._srev)return;
+                    el._srev=true;
+                    el.style.cssText+=`
+                        opacity:0;
+                        transform:translateY(24px) scale(.975);
+                        filter:blur(4px);
+                        transition:opacity .75s cubic-bezier(.22,1,.36,1),
+                                   transform .75s cubic-bezier(.22,1,.36,1),
+                                   filter .75s cubic-bezier(.22,1,.36,1);
+                    `;
+                    el.dataset.delay=String(ei*55);
+                    sio.observe(el);
+                });
+            });
+        }
+        applyScrollReveal();
+
+        /* Scroll-linked gold line on left edge */
+        if(!doc.getElementById('_sline')){
+            const line=doc.createElement('div');
+            line.id='_sline';
+            line.style.cssText=`
+                position:fixed;left:0;top:0;width:2px;height:0%;
+                background:linear-gradient(180deg,transparent,#c9a84c,#f5e080,#c9a84c,transparent);
+                z-index:2147483644;pointer-events:none;
+                transition:height .1s linear;
+                box-shadow:0 0 8px rgba(201,168,76,.6);
+            `;
+            doc.body.appendChild(line);
+
+            function updateLine(){
+                const el=doc.documentElement;
+                const pct=el.scrollTop/(el.scrollHeight-el.clientHeight)*100||0;
+                line.style.height=Math.min(pct,100)+'%';
+            }
+            doc.addEventListener('scroll',updateLine,{passive:true});
+            const me2=doc.querySelector('.main');
+            if(me2)me2.addEventListener('scroll',updateLine,{passive:true});
+        }
+
+        return applyScrollReveal;
+    }
+
+    function runAll(){
+        addReveal();addTilt();addMagnetic();
+        addCounters();addTabRipple();addChartStagger();
+        const reapply=addScrollAnimations();
+    }
     runAll();
-    new MutationObserver(()=>{clearTimeout(doc._apexT);doc._apexT=setTimeout(runAll,380);}).observe(doc.body,{childList:true,subtree:true});
+    new MutationObserver(()=>{
+        clearTimeout(doc._apexT);
+        doc._apexT=setTimeout(()=>{
+            addReveal();addTilt();addMagnetic();
+            addCounters();addTabRipple();addChartStagger();
+            addScrollAnimations();
+        },380);
+    }).observe(doc.body,{childList:true,subtree:true});
 })();
 </script></body></html>"""
 

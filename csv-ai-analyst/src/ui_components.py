@@ -192,9 +192,11 @@ def toast(title: str, message: str, icon: str = "✦") -> str:
     </div>"""
 
 
-# ── CSS loader ────────────────────────────────────────────────────────────────
+# ── CSS + Motion loader ───────────────────────────────────────────────────────
 def load_all_styles(base_path: str = "assets"):
-    """Load all CSS files into Streamlit."""
+    """Load all CSS files + inject motion engine on every page."""
+    import streamlit.components.v1 as components
+
     files = ["style.css", "components.css", "animations.css"]
     combined = ""
     for f in files:
@@ -204,3 +206,7 @@ def load_all_styles(base_path: str = "assets"):
         except FileNotFoundError:
             pass
     st.markdown(f"<style>{combined}</style>", unsafe_allow_html=True)
+
+    # Inject cursor + scroll animations on every page
+    from src.animations import apex_motion_engine
+    components.html(apex_motion_engine(), height=1, scrolling=False)
