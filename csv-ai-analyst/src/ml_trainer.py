@@ -157,10 +157,13 @@ def prepare_data(df: pd.DataFrame, target_col: str) -> Tuple:
     X = data.drop(columns=[target_col])
     y = data[target_col]
 
-    # Drop datetime columns — can't be used as ML features directly
-    dt_cols = X.select_dtypes(include=["datetime", "datetimetz"]).columns.tolist()
-    if dt_cols:
-        X = X.drop(columns=dt_cols)
+    # Drop ALL non-numeric, non-object columns (datetime, timedelta, etc.)
+    # Keep only object (for label encoding) and numeric columns
+    keep_cols = [
+        c for c in X.columns
+        if X[c].dtype == object or pd.api.types.is_numeric_dtype(X[c])
+    ]
+    X = X[keep_cols]
 
     for col in X.select_dtypes(include="object").columns:
         le = LabelEncoder()
