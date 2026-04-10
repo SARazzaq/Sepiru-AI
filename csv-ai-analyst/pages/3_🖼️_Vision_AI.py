@@ -49,7 +49,6 @@ except Exception as e:
     st.error(f"Failed to load Groq: {e}")
     st.stop()
 
-
 def analyze_image(image_bytes: bytes, mime_type: str, prompt: str) -> str:
     """Send image + prompt to Groq vision model."""
     b64 = base64.b64encode(image_bytes).decode("utf-8")

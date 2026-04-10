@@ -43,13 +43,11 @@ class AIClient:
 
         elif self.provider == "gemini":
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=_get_secret("GEMINI_API_KEY"))
+                import google.genai as genai
+                self._client = genai.Client(api_key=_get_secret("GEMINI_API_KEY"))
                 self.model = _get_secret("GEMINI_MODEL", "gemini-2.0-flash")
-                self._genai = genai
-                self._client = genai.GenerativeModel(self.model)
             except ImportError:
-                raise ImportError("Run: pip install google-generativeai")
+                raise ImportError("Run: pip install google-genai")
 
         elif self.provider == "openai":
             try:
@@ -150,17 +148,16 @@ class AIClient:
     def _gemini_generate(self, prompt: str, system: str) -> str:
         from src.quota_guard import increment
         full = f"{system}\n\n{prompt}" if system else prompt
-        r = self._client.generate_content(full)
+        r = self._client.models.generate_content(model=self.model, contents=full)
         increment(1)
         return r.text
 
     def _gemini_stream(self, prompt: str, system: str) -> Generator[str, None, None]:
         from src.quota_guard import increment
         full = f"{system}\n\n{prompt}" if system else prompt
-        for chunk in self._client.generate_content(full, stream=True):
-            if chunk.text:
-                yield chunk.text
+        r = self._client.models.generate_content(model=self.model, contents=full)
         increment(1)
+        yield r.text
 
     def _ollama_generate(self, prompt: str, system: str) -> str:
         payload = {

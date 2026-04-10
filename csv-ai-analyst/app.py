@@ -562,17 +562,17 @@ else:
         st.subheader("💬 Chat with Your Data")
 
         try:
-            import google.generativeai as genai_chat
+            import google.genai as genai_chat
+            from google.genai import types as genai_types
             _gemini_key = _secret("GEMINI_API_KEY")
             _gemini_ready = False
             _gemini_model = None
             if _gemini_key:
-                genai_chat.configure(api_key=_gemini_key)
-                _gemini_model = genai_chat.GenerativeModel("gemini-2.0-flash")
+                _gemini_client = genai_chat.Client(api_key=_gemini_key)
                 _gemini_ready = True
         except Exception:
             _gemini_ready = False
-            _gemini_model = None
+            _gemini_client = None
 
         if not _gemini_ready:
             st.warning("Gemini API key not configured. Add GEMINI_API_KEY to Streamlit secrets.")
@@ -580,7 +580,6 @@ else:
             c_l, c_r = st.columns([1, 6])
             with c_l:
                 show_lottie("robot", height=80)
-
             SYSTEM = (
                 "You are an expert data analyst. "
                 "Answer questions using ONLY the data context provided. "
@@ -633,12 +632,11 @@ Answer using the data above. Be specific with numbers and values."""
                         placeholder   = st.empty()
                         full_response = ""
                         try:
-                            for chunk in _gemini_model.generate_content(
-                                full_prompt, stream=True
-                            ):
-                                if chunk.text:
-                                    full_response += chunk.text
-                                    placeholder.markdown(full_response + "▌")
+                            response = _gemini_client.models.generate_content(
+                                model="gemini-2.0-flash",
+                                contents=full_prompt,
+                            )
+                            full_response = response.text
                         except Exception as e:
                             full_response = f"❌ Gemini error: {e}"
                         placeholder.markdown(full_response)
