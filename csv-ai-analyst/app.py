@@ -97,13 +97,19 @@ if not can_proceed():
 # ── Load all styles + motion engine ──────────────────────────────────────────
 load_all_styles("assets")
 
-# ── Lock sidebar open — hide collapse button ──────────────────────────────────
+# ── Lock sidebar open — hide all collapse/expand buttons ─────────────────────
 st.markdown("""
 <style>
-/* Always show sidebar — remove collapse/expand arrow */
-[data-testid="collapsedControl"] { display:none !important; }
-section[data-testid="stSidebar"] { min-width:280px !important; transform:none !important; }
-section[data-testid="stSidebar"] > div:first-child { width:280px !important; }
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapsedControl"],
+button[kind="header"],
+.st-emotion-cache-1egp75f,
+.st-emotion-cache-dvne4q,
+.st-emotion-cache-1rtdyuf,
+[aria-label="Close sidebar"],
+[aria-label="Open sidebar"],
+[aria-label="Collapse sidebar"] { display:none !important; visibility:hidden !important; }
+section[data-testid="stSidebar"] { min-width:280px !important; transform:translateX(0) !important; }
 </style>
 """, unsafe_allow_html=True)
 
