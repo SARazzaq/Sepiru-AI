@@ -163,16 +163,18 @@ with st.sidebar:
         if models:
             ai.model = st.selectbox("🤖 Model", models)
             st.session_state.selected_model = ai.model
-            chat_model = st.selectbox(
-                "💬 Chat Model",
-                models,
-                index=0,
-                help="Used only in the Chat tab"
-            )
+            chat_model = ai.model  # Chat tab uses Gemini directly
         else:
             chat_model = ai.model
     else:
         chat_model = None
+
+    st.markdown(
+        '<div style="font-size:.6rem;color:#4a4a6a;letter-spacing:1.5px;'
+        'text-transform:uppercase;margin-top:.3rem;">'
+        '💬 Chat · Gemini 2.0 Flash</div>',
+        unsafe_allow_html=True
+    )
 
     st.divider()
     st.markdown("### 🎛️ Generation Settings")
