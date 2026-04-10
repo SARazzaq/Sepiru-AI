@@ -4,6 +4,8 @@ Translate data insights, column names, and chat in your native language.
 """
 import streamlit as st
 import pandas as pd
+
+st.set_page_config(layout="wide", initial_sidebar_state="expanded")
 from src.ui_components import load_all_styles
 from src.quota_guard import can_proceed, get_usage, reset_time_utc
 

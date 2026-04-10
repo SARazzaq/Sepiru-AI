@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+st.set_page_config(layout="wide", initial_sidebar_state="expanded")
 load_dotenv()
 
 from src.ui_components import load_all_styles

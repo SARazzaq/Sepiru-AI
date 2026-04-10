@@ -5,6 +5,8 @@ Deep Data Profiling Page
 import streamlit as st
 import pandas as pd
 
+st.set_page_config(layout="wide", initial_sidebar_state="expanded")
+
 from src.ui_components import load_all_styles
 load_all_styles("assets")
 
