@@ -157,6 +157,11 @@ def prepare_data(df: pd.DataFrame, target_col: str) -> Tuple:
     X = data.drop(columns=[target_col])
     y = data[target_col]
 
+    # Drop datetime columns — can't be used as ML features directly
+    dt_cols = X.select_dtypes(include=["datetime", "datetimetz"]).columns.tolist()
+    if dt_cols:
+        X = X.drop(columns=dt_cols)
+
     for col in X.select_dtypes(include="object").columns:
         le = LabelEncoder()
         X[col] = le.fit_transform(X[col].astype(str))
