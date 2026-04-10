@@ -47,8 +47,8 @@ if not os.environ.get("AI_PROVIDER"):
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="CSV AI Analyst",
-    page_icon="📊",
+    page_title="Sepiru AI",
+    page_icon="✦",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -130,8 +130,8 @@ for k, v in DEFAULTS.items():
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class='app-header'>
-    <h1>CSV <span>AI</span> Analyst</h1>
-    <p>Upload &nbsp;·&nbsp; Clean &nbsp;·&nbsp; Visualise &nbsp;·&nbsp; Chat &nbsp;·&nbsp; Forecast &nbsp;·&nbsp; Compare</p>
+    <h1>Sepiru <span>AI</span></h1>
+    <p>Your data has a story &nbsp;·&nbsp; We make it speak</p>
 </div>
 """, unsafe_allow_html=True)
 
