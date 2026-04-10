@@ -539,12 +539,15 @@ else:
             st.success("↩️ Reset to original.")
             st.rerun()
 
-    # ── TAB 4 — CHAT ──────────────────────────────────────────────────────────
+    # ── TAB 4 — CHAT (powered by Gemini) ─────────────────────────────────────
     with tab4:
-        st.subheader("💬 Chat with Your Data")
+        from src.gemini_client import chat as gemini_chat, is_available as gemini_ok
 
-        if not st.session_state.ai_ready or ai is None:
-            st.error("AI not connected — check sidebar configuration.")
+        st.subheader("💬 Chat with Your Data")
+        st.caption("✦ Powered by Google Gemini AI")
+
+        if not gemini_ok():
+            st.warning("Gemini API key not configured. Add GEMINI_API_KEY to Streamlit secrets.")
         else:
             c_l, c_r = st.columns([1, 6])
             with c_l:
@@ -563,12 +566,10 @@ else:
 
             user_input = st.chat_input("Ask anything about your data…")
             if user_input:
-                # ── Rate limit check ──────────────────────────────────
                 allowed, rate_msg = check_rate_limit()
                 if not allowed:
                     st.warning(f"⏳ {rate_msg}")
                 else:
-                    # ── Sanitise input ────────────────────────────────
                     clean_input, flagged = sanitise_user_input(user_input)
                     if flagged:
                         st.warning("⚠️ Your message contained disallowed instructions and was cleaned.")
@@ -580,38 +581,36 @@ else:
                     )
 
                     context = extract_relevant_context(df, clean_input)
-                    context = sanitise_context(context)  # truncate context to safe size
+                    context = sanitise_context(context)
 
-                recent  = st.session_state.chat_history[-10:]
-                history = ""
-                for m in recent[:-1]:
-                    role = "User" if m["role"] == "user" else "Assistant"
-                    history += f"\n{role}: {m['content']}"
+                    recent  = st.session_state.chat_history[-10:]
+                    history = ""
+                    for m in recent[:-1]:
+                        role = "User" if m["role"] == "user" else "Assistant"
+                        history += f"\n{role}: {m['content']}"
 
-                full_prompt = f"""Here is the relevant data extracted from the dataset:
+                    full_prompt = f"""Here is the relevant data extracted from the dataset:
 
 {context}
 
 Conversation so far:{history}
 
-User: {user_input}
+User: {clean_input}
 
 Answer using the data above. Be specific with numbers and values."""
 
-                ai.model = chat_model
-                with st.chat_message("assistant"):
-                    st.markdown(typing_indicator(), unsafe_allow_html=True)
-                    placeholder   = st.empty()
-                    full_response = ""
-                    for chunk in ai.generate_stream(full_prompt, system=SYSTEM):
-                        full_response += chunk
-                        placeholder.markdown(full_response + "▌")
-                    placeholder.markdown(full_response)
+                    with st.chat_message("assistant"):
+                        st.markdown(typing_indicator(), unsafe_allow_html=True)
+                        placeholder   = st.empty()
+                        full_response = ""
+                        for chunk in gemini_chat(full_prompt, system=SYSTEM):
+                            full_response += chunk
+                            placeholder.markdown(full_response + "▌")
+                        placeholder.markdown(full_response)
 
-                st.session_state.chat_history.append(
-                    {"role": "assistant", "content": full_response}
-                )
-                ai.model = st.session_state.get("selected_model", ai.model)
+                    st.session_state.chat_history.append(
+                        {"role": "assistant", "content": full_response}
+                    )
 
             if st.session_state.chat_history:
                 if st.button("🗑️ Clear Chat"):
