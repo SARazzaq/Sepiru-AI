@@ -412,19 +412,12 @@ code,.stCode {
 .stRadio label:hover,.stCheckbox label:hover { color:var(--gold) !important; }
 .js-plotly-plot .plotly { background:transparent !important; }
 [data-testid="stTooltipIcon"] { color:var(--text-dim) !important; }
-/* Hide Streamlit chrome, keep sidebar toggle */
+/* Hide Streamlit chrome */
 #MainMenu, footer { visibility:hidden; }
+header { visibility:hidden; }
 
-/* Hide header content but NOT the header element itself */
-header [data-testid="stToolbar"],
-header [data-testid="stDecoration"],
-header [data-testid="stStatusWidget"],
-header .stAppToolbar { display:none !important; }
-
-/* Keep the sidebar toggle button fully visible */
-[data-testid="collapsedControl"] {
-  visibility:visible !important;
-  display:flex !important;
-  opacity:1 !important;
-  pointer-events:auto !important;
+/* Always-open sidebar — hide the collapse/expand toggle */
+[data-testid="collapsedControl"],
+button[data-testid="baseButton-headerNoPadding"] {
+  display:none !important;
 }
