@@ -557,11 +557,10 @@ else:
             st.success("↩️ Reset to original.")
             st.rerun()
 
-    # ── TAB 4 — CHAT (powered by Gemini for Google Solution Challenge) ─────────
+    # ── TAB 4 — CHAT (Gemini 2.0 Flash — Google Solution Challenge) ──────────
     with tab4:
         st.subheader("💬 Chat with Your Data")
 
-        # Gemini client for chat only
         try:
             import google.generativeai as genai_chat
             _gemini_key = _secret("GEMINI_API_KEY")
