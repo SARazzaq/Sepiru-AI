@@ -88,11 +88,13 @@ def _step1():
         key="_pw"
     )
 
-    # Honeypot — visually hidden via CSS, bots fill it
+    # Honeypot — wrapped in a named div, hidden via CSS
+    st.markdown('<div id="sep_hp_wrap">', unsafe_allow_html=True)
     hp = st.text_input(
         "Leave blank", value="",
         key="_hp", label_visibility="collapsed"
     )
+    st.markdown('</div>', unsafe_allow_html=True)
 
     btn = st.button("Continue →", use_container_width=True, key="_pw_btn")
 
@@ -304,8 +306,8 @@ def _css() -> str:
         color:rgba(255,255,255,.1)!important;letter-spacing:6px!important;
     }
 
-    /* Honeypot — the SECOND input (after password) is hidden */
-    .stTextInput:nth-of-type(2) {
+    /* Honeypot wrapper — completely invisible to humans */
+    #sep_hp_wrap {
         position:absolute!important;
         left:-9999px!important;top:-9999px!important;
         width:0!important;height:0!important;
