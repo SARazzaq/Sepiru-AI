@@ -416,8 +416,14 @@ code,.stCode {
 #MainMenu, footer { visibility:hidden; }
 header { visibility:hidden; }
 
-/* Always-open sidebar — hide the collapse/expand toggle */
+/* Hide ALL sidebar toggle/collapse buttons */
 [data-testid="collapsedControl"],
-button[data-testid="baseButton-headerNoPadding"] {
+[data-testid="stSidebarCollapsedControl"],
+button[aria-label="Close sidebar"],
+button[aria-label="Open sidebar"],
+button[aria-label="Collapse sidebar"],
+section[data-testid="stSidebar"] button[kind="header"],
+.st-emotion-cache-1egp75f,
+.st-emotion-cache-dvne4q {
   display:none !important;
 }
