@@ -170,9 +170,10 @@ with st.sidebar:
         chat_model = None
 
     st.markdown(
-        '<div style="font-size:.6rem;color:#4a4a6a;letter-spacing:1.5px;'
-        'text-transform:uppercase;margin-top:.3rem;">'
-        '💬 Chat · Gemini 2.0 Flash</div>',
+        '<div class="status-pill" style="margin-top:.4rem;">'
+        '<span class="live-dot"></span>'
+        'Chat &nbsp;·&nbsp; Gemini 2.0 Flash'
+        '</div>',
         unsafe_allow_html=True
     )
 
