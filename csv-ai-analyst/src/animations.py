@@ -1195,30 +1195,8 @@ def direct_motion_inject() -> str:
         });
     }
 
-    /* ── Force sidebar always open ── */
-    function forceSidebar(){
-        const sidebar=doc.querySelector('section[data-testid="stSidebar"]');
-        if(!sidebar)return;
-        // If Streamlit collapsed it, force it open
-        if(sidebar.getAttribute('aria-expanded')==='false'||
-           sidebar.style.width==='0px'||
-           sidebar.classList.contains('st-emotion-cache-collapsed')){
-            // Click the toggle to reopen
-            const btn=doc.querySelector('[data-testid="collapsedControl"] button,'+
-                '[data-testid="stSidebarCollapsedControl"] button');
-            if(btn)btn.click();
-        }
-        // Hide all collapse buttons after forcing open
-        doc.querySelectorAll(
-            '[data-testid="collapsedControl"],'  +
-            '[data-testid="stSidebarCollapsedControl"],' +
-            'button[aria-label="Close sidebar"],' +
-            'button[aria-label="Collapse sidebar"]'
-        ).forEach(b=>b.style.display='none');
-    }
-
-    forceSidebar();
-    setInterval(forceSidebar, 800);
+    /* ── Run all ── */
+    function runAll() {
         addReveal();
         addTilt();
         addMagnetic();
