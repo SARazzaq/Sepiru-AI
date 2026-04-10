@@ -637,8 +637,21 @@ Answer using the data above. Be specific with numbers and values."""
                                 contents=full_prompt,
                             )
                             full_response = response.text
-                        except Exception as e:
-                            full_response = f"❌ Gemini error: {e}"
+                        except Exception as gemini_err:
+                            err_str = str(gemini_err)
+                            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+                                placeholder.markdown(
+                                    "⚠️ Gemini quota reached — switching to Groq…"
+                                )
+                                try:
+                                    for chunk in ai.generate_stream(full_prompt, system=SYSTEM):
+                                        full_response += chunk
+                                        placeholder.markdown(full_response + "▌")
+                                    full_response += "\n\n*— answered by Groq (Gemini quota reached)*"
+                                except Exception as groq_err:
+                                    full_response = f"❌ Both Gemini and Groq failed: {groq_err}"
+                            else:
+                                full_response = f"❌ Gemini error: {gemini_err}"
                         placeholder.markdown(full_response)
 
                     st.session_state.chat_history.append(
