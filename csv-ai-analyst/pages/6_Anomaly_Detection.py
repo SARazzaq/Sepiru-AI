@@ -100,8 +100,12 @@ if st.button("▶️ Detect Anomalies", type="primary", use_container_width=True
 
         # Visualise
         if len(cols_sel) >= 2:
-            fig = px.scatter(df, x=cols_sel[0], y=cols_sel[1],
-                             color=anomaly_mask.map({True:"Anomaly",False:"Normal"}),
+            plot_df = df[cols_sel[:2]].copy().reset_index(drop=True)
+            plot_df["Type"] = anomaly_mask.reset_index(drop=True).map(
+                {True: "Anomaly", False: "Normal"}
+            )
+            fig = px.scatter(plot_df, x=cols_sel[0], y=cols_sel[1],
+                             color="Type",
                              color_discrete_map={"Anomaly":"#f43f5e","Normal":"rgba(201,168,76,.4)"},
                              title=f"Anomaly Map — {cols_sel[0]} vs {cols_sel[1]}", **DARK)
             st.plotly_chart(fig, use_container_width=True)
