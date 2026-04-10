@@ -412,18 +412,4 @@ code,.stCode {
 .stRadio label:hover,.stCheckbox label:hover { color:var(--gold) !important; }
 .js-plotly-plot .plotly { background:transparent !important; }
 [data-testid="stTooltipIcon"] { color:var(--text-dim) !important; }
-/* Hide Streamlit chrome */
-#MainMenu, footer { visibility:hidden; }
-header { visibility:hidden; }
-
-/* Hide ALL sidebar toggle/collapse buttons */
-[data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"],
-button[aria-label="Close sidebar"],
-button[aria-label="Open sidebar"],
-button[aria-label="Collapse sidebar"],
-section[data-testid="stSidebar"] button[kind="header"],
-.st-emotion-cache-1egp75f,
-.st-emotion-cache-dvne4q {
-  display:none !important;
-}
+#MainMenu,footer,header { visibility:hidden; }

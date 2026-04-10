@@ -41,8 +41,9 @@ def require_auth():
     if st.session_state.get("_auth"):
         return
 
-    # Generate captcha only on first load — never during a submission rerun
     if "_cap_q" not in st.session_state:
+        _new_captcha()
+    if time.time() - st.session_state.get("_cap_ts", 0) > 300:
         _new_captcha()
 
     q   = st.session_state["_cap_q"]
@@ -180,9 +181,8 @@ def require_auth():
             except ValueError:
                 given = None
             if given != ans:
-                error = "✕ Wrong answer. Try again."
-                # Only regenerate after wrong answer, not on every rerun
                 _new_captcha()
+                error = "✕ Wrong answer. New problem generated."
 
         if error:
             _, ec, _ = st.columns([1, 1.5, 1])
@@ -191,11 +191,6 @@ def require_auth():
                             unsafe_allow_html=True)
         else:
             st.session_state["_auth"] = True
-            st.rerun()
-    else:
-        # No submission — safe to expire captcha here
-        if time.time() - st.session_state.get("_cap_ts", 0) > 300:
-            _new_captcha()
             st.rerun()
 
     st.markdown('<div class="sep-footer">✦ Authorised access only &nbsp;·&nbsp; Protected by custom CAPTCHA</div>',
