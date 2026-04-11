@@ -265,7 +265,7 @@ with st.sidebar:
     st.markdown(
         '<div class="status-pill" style="margin-top:.4rem;">'
         '<span class="live-dot"></span>'
-        'Chat &nbsp;·&nbsp; LLaMA 3.3 70B'
+        'Chat &nbsp;·&nbsp; Gemini 2.0 Flash → Groq'
         '</div>',
         unsafe_allow_html=True
     )
