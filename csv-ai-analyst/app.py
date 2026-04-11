@@ -77,7 +77,7 @@ section[data-testid="stSidebar"] { min-width:280px !important; transform:transla
 """, unsafe_allow_html=True)
 
 # ── Aurora background ─────────────────────────────────────────────────────────
-st.iframe(aurora_background(), height=1, scrolling=False)
+st.iframe(aurora_background(), height=1)
 
 # ── Session state ─────────────────────────────────────────────────────────────
 DEFAULTS = {
