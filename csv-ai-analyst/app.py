@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from src.animations import aurora_background, show_lottie, apex_motion_engine
 from src.ui_components import load_all_styles, typing_indicator, render_section, render_insight, render_metric_cards, upload_cta, status_pill
 from src.auth import require_auth
-from src.quota_guard import can_proceed, get_usage, reset_time_utc, maintenance_gate
+from src.quota_guard import can_proceed, get_usage, reset_time_utc, maintenance_gate, increment
 from src.smart_context import extract_relevant_context
 import streamlit as st
 import pandas as pd
@@ -76,8 +76,8 @@ section[data-testid="stSidebar"] { min-width:280px !important; transform:transla
 </style>
 """, unsafe_allow_html=True)
 
-# ── Aurora background ─────────────────────────────────────────────────────────
-st.iframe(aurora_background(), height="content")
+# ── Aurora background — height=1, CSS collapses the iframe wrapper ────────────
+st.iframe(aurora_background(), height=1)
 
 # ── Session state ─────────────────────────────────────────────────────────────
 DEFAULTS = {
@@ -520,10 +520,9 @@ else:
             st.success("↩️ Reset to original.")
             st.rerun()
 
-    # ── TAB 4 — CHAT (Groq llama-3.3-70b) ────────────────────────────────────
+    # ── TAB 4 — CHAT (Gemini first → Groq fallback) ──────────────────────────
     with tab4:
         st.subheader("💬 Chat with Your Data")
-        st.caption("⚡ Powered by Groq · LLaMA 3.3 70B — Gemini quota not used here")
 
         if not st.session_state.ai_ready or ai is None:
             st.error("AI not connected — check sidebar configuration.")
@@ -581,10 +580,44 @@ Answer using the data above. Be specific with numbers and values."""
                         st.markdown(typing_indicator(), unsafe_allow_html=True)
                         placeholder   = st.empty()
                         full_response = ""
-                        for chunk in ai.generate_stream(full_prompt, system=SYSTEM):
-                            full_response += chunk
-                            placeholder.markdown(full_response + "▌")
+                        used_model    = "Groq"
+
+                        # Try Gemini first
+                        _gemini_key = _secret("GEMINI_API_KEY")
+                        _gemini_ok  = False
+                        if _gemini_key and can_proceed("gemini"):
+                            try:
+                                import google.genai as _genai
+                                _gc = _genai.Client(api_key=_gemini_key)
+                                _resp = _gc.models.generate_content(
+                                    model="gemini-2.0-flash",
+                                    contents=f"{SYSTEM}\n\n{full_prompt}",
+                                )
+                                full_response = _resp.text
+                                increment("gemini", 1)
+                                used_model  = "Gemini 2.0 Flash"
+                                _gemini_ok  = True
+                            except Exception as _ge:
+                                _err = str(_ge)
+                                if "429" in _err or "quota" in _err.lower() or "RESOURCE_EXHAUSTED" in _err:
+                                    placeholder.markdown("⚠️ Gemini quota reached — switching to Groq…")
+                                    increment("gemini", 9999)  # mark exhausted
+                                # fall through to Groq
+
+                        # Groq fallback
+                        if not _gemini_ok:
+                            try:
+                                for chunk in ai.generate_stream(full_prompt, system=SYSTEM):
+                                    full_response += chunk
+                                    placeholder.markdown(full_response + "▌")
+                                increment("groq", 1)
+                                used_model = "Groq"
+                            except Exception as _ge2:
+                                full_response = f"❌ Error: {_ge2}"
+
                         placeholder.markdown(full_response)
+                        if used_model != "Groq":
+                            st.caption(f"✦ Answered by {used_model}")
 
                     st.session_state.chat_history.append(
                         {"role": "assistant", "content": full_response}

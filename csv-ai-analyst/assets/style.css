@@ -429,3 +429,23 @@ section[data-testid="stSidebar"] {
     transform:translateX(0) !important;
     min-width:280px !important;
 }
+
+/* ── Collapse animation iframes — canvases are position:fixed anyway ── */
+iframe[title="st.iframe"] {
+    display:block!important;
+    height:1px!important;
+    min-height:0!important;
+    max-height:1px!important;
+    overflow:hidden!important;
+    margin:0!important;
+    padding:0!important;
+    border:none!important;
+}
+div:has(> iframe[title="st.iframe"]) {
+    height:1px!important;
+    min-height:0!important;
+    max-height:1px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+}
