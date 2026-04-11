@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from src.animations import aurora_background, show_lottie, apex_motion_engine
 from src.ui_components import load_all_styles, typing_indicator, render_section, render_insight, render_metric_cards, upload_cta, status_pill
 from src.auth import require_auth
-from src.quota_guard import can_proceed, get_usage, reset_time_utc
+from src.quota_guard import can_proceed, get_usage, reset_time_utc, maintenance_gate
 from src.smart_context import extract_relevant_context
 import streamlit as st
 import streamlit.components.v1 as components
@@ -56,43 +56,7 @@ st.set_page_config(
 require_auth()
 
 # ── Quota maintenance gate ────────────────────────────────────────────────────
-if not can_proceed():
-    st.markdown("""
-    <style>
-    #MainMenu,footer,header,section[data-testid="stSidebar"]{display:none!important;}
-    .main .block-container{
-        min-height:100vh!important;display:flex!important;
-        flex-direction:column!important;align-items:center!important;
-        justify-content:center!important;text-align:center!important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    st.markdown(f"""
-    <div style="max-width:500px;margin:auto;padding:3rem 2rem;
-         background:linear-gradient(145deg,#0c0c20,#080818);
-         border:1px solid rgba(201,168,76,.2);border-radius:24px;text-align:center;">
-        <div style="font-size:3rem;margin-bottom:1rem;">⚙️</div>
-        <h2 style="font-family:'Playfair Display',serif;color:#e8c96a;
-                   font-size:1.8rem;font-weight:400;font-style:italic;margin-bottom:.8rem;">
-            Under Maintenance
-        </h2>
-        <p style="color:#6a6a88;font-size:.9rem;line-height:1.7;margin-bottom:1.5rem;">
-            Daily AI quota has been reached to keep this service free.<br>
-            The app will automatically resume when quota resets.
-        </p>
-        <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);
-             border-radius:12px;padding:1rem;margin-bottom:1rem;">
-            <div style="color:#4a4a6a;font-size:.6rem;letter-spacing:2px;
-                        text-transform:uppercase;margin-bottom:.3rem;">Resets in</div>
-            <div style="font-family:'Playfair Display',serif;color:#c9a84c;
-                        font-size:2rem;font-weight:400;">{reset_time_utc()}</div>
-        </div>
-        <p style="color:#3a3a52;font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;">
-            Powered by Groq Free Tier · 14,400 req/day
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    st.stop()
+maintenance_gate()
 
 # ── Load all styles + motion engine ──────────────────────────────────────────
 load_all_styles("assets")

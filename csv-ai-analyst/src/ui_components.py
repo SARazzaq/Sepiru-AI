@@ -217,5 +217,9 @@ def load_all_styles(base_path: str = "assets"):
             pass
     st.markdown(f"<style>{combined}</style>", unsafe_allow_html=True)
 
+    # Quota maintenance gate — runs on every page
+    from src.quota_guard import maintenance_gate
+    maintenance_gate()
+
     from src.animations import apex_motion_engine
     components.html(apex_motion_engine(), height=0, scrolling=False)
