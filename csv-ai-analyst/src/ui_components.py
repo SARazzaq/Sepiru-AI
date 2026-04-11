@@ -221,4 +221,4 @@ def load_all_styles(base_path: str = "assets"):
     maintenance_gate()
 
     from src.animations import apex_motion_engine
-    st.iframe(apex_motion_engine(), height=0)
+    st.iframe(apex_motion_engine(), height="content")

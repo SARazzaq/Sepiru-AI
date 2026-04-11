@@ -106,13 +106,11 @@ def check_all_quotas() -> dict:
 
 def maintenance_gate():
     """
-    Call this in app.py after auth.
-    Shows a premium maintenance page if any critical API quota is exhausted.
-    Blocks the app until quota resets.
+    Shows maintenance page only if Groq quota is exhausted.
+    Gemini is optional — app runs fine without it.
     """
-    status = check_all_quotas()
-    if status["ok"]:
-        return  # all good
+    if can_proceed("groq"):
+        return  # Groq has quota — app can run
 
     import streamlit as st
 
@@ -130,8 +128,7 @@ def maintenance_gate():
     </style>
     """, unsafe_allow_html=True)
 
-    exhausted_str = " &amp; ".join(status["exhausted"])
-    resets_in     = reset_time_utc()
+    resets_in = reset_time_utc()
 
     st.markdown(f"""
     <style>
@@ -139,60 +136,32 @@ def maintenance_gate():
     @keyframes mPulse{{0%,100%{{opacity:.6;}}50%{{opacity:1;}}}}
     @keyframes mFade{{from{{opacity:0;transform:translateY(20px);}}to{{opacity:1;transform:translateY(0);}}}}
     </style>
-    <div style="max-width:480px;margin:auto;text-align:center;
-         animation:mFade .8s ease both;">
-
-        <!-- Gear icon -->
-        <div style="font-size:3.5rem;margin-bottom:1.2rem;
-             animation:mPulse 2.5s ease-in-out infinite;">⚙️</div>
-
-        <!-- Title -->
+    <div style="max-width:480px;margin:auto;text-align:center;animation:mFade .8s ease both;">
+        <div style="font-size:3.5rem;margin-bottom:1.2rem;animation:mPulse 2.5s ease-in-out infinite;">⚙️</div>
         <div style="font-family:'Cormorant Garamond',serif;font-style:italic;
              font-size:2.4rem;font-weight:300;
              background:linear-gradient(135deg,#f5e080,#c9a84c);
              -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-             background-clip:text;margin-bottom:.6rem;">
-            Under Maintenance
-        </div>
-
-        <!-- Subtitle -->
+             background-clip:text;margin-bottom:.6rem;">Under Maintenance</div>
         <div style="font-family:'Space Grotesk',sans-serif;font-size:.88rem;
-             font-weight:300;color:rgba(255,255,255,.4);line-height:1.7;
-             margin-bottom:1.8rem;">
+             font-weight:300;color:rgba(255,255,255,.4);line-height:1.7;margin-bottom:1.8rem;">
             Daily AI quota has been reached to keep this service free.<br>
             Sepiru AI will automatically resume when quota resets.
         </div>
-
-        <!-- Info card -->
-        <div style="background:rgba(201,168,76,.06);
-             border:1px solid rgba(201,168,76,.18);border-radius:16px;
-             padding:1.5rem;margin-bottom:1.2rem;">
+        <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.18);
+             border-radius:16px;padding:1.5rem;margin-bottom:1.2rem;">
             <div style="font-family:'Space Grotesk',sans-serif;font-size:.58rem;
                  font-weight:500;letter-spacing:3px;text-transform:uppercase;
-                 color:rgba(201,168,76,.4);margin-bottom:.6rem;">
-                Quota reached
-            </div>
-            <div style="font-family:'Space Grotesk',sans-serif;font-size:.88rem;
-                 color:rgba(255,255,255,.5);margin-bottom:1rem;">
-                {exhausted_str}
-            </div>
-            <div style="font-family:'Space Grotesk',sans-serif;font-size:.58rem;
-                 font-weight:500;letter-spacing:3px;text-transform:uppercase;
-                 color:rgba(201,168,76,.4);margin-bottom:.4rem;">
-                Resets in
-            </div>
+                 color:rgba(201,168,76,.4);margin-bottom:.4rem;">Resets in</div>
             <div style="font-family:'Cormorant Garamond',serif;font-style:italic;
                  font-size:2.2rem;font-weight:300;
                  background:linear-gradient(135deg,#f5e080,#c9a84c);
                  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-                 background-clip:text;">
-                {resets_in}
-            </div>
+                 background-clip:text;">{resets_in}</div>
         </div>
-
         <div style="font-family:'Space Grotesk',sans-serif;font-size:.55rem;
              color:rgba(255,255,255,.1);letter-spacing:2px;text-transform:uppercase;">
-            ✦ Powered by free AI APIs &nbsp;·&nbsp; Sepiru AI
+            ✦ Powered by Groq Free Tier &nbsp;·&nbsp; Sepiru AI
         </div>
     </div>
     """, unsafe_allow_html=True)

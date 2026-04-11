@@ -77,7 +77,7 @@ section[data-testid="stSidebar"] { min-width:280px !important; transform:transla
 """, unsafe_allow_html=True)
 
 # ── Aurora background ─────────────────────────────────────────────────────────
-st.iframe(aurora_background(), height=1)
+st.iframe(aurora_background(), height="content")
 
 # ── Session state ─────────────────────────────────────────────────────────────
 DEFAULTS = {
@@ -135,7 +135,7 @@ with st.sidebar:
     st.markdown(
         '<div class="status-pill" style="margin-top:.4rem;">'
         '<span class="live-dot"></span>'
-        'Chat &nbsp;·&nbsp; Gemini 2.0 Flash'
+        'Chat &nbsp;·&nbsp; LLaMA 3.3 70B'
         '</div>',
         unsafe_allow_html=True
     )
@@ -520,29 +520,18 @@ else:
             st.success("↩️ Reset to original.")
             st.rerun()
 
-    # ── TAB 4 — CHAT (Gemini 2.0 Flash — Google Solution Challenge) ──────────
+    # ── TAB 4 — CHAT (Groq llama-3.3-70b) ────────────────────────────────────
     with tab4:
         st.subheader("💬 Chat with Your Data")
+        st.caption("⚡ Powered by Groq · LLaMA 3.3 70B — Gemini quota not used here")
 
-        try:
-            import google.genai as genai_chat
-            from google.genai import types as genai_types
-            _gemini_key = _secret("GEMINI_API_KEY")
-            _gemini_ready = False
-            _gemini_model = None
-            if _gemini_key:
-                _gemini_client = genai_chat.Client(api_key=_gemini_key)
-                _gemini_ready = True
-        except Exception:
-            _gemini_ready = False
-            _gemini_client = None
-
-        if not _gemini_ready:
-            st.warning("Gemini API key not configured. Add GEMINI_API_KEY to Streamlit secrets.")
+        if not st.session_state.ai_ready or ai is None:
+            st.error("AI not connected — check sidebar configuration.")
         else:
             c_l, c_r = st.columns([1, 6])
             with c_l:
                 show_lottie("robot", height=80)
+
             SYSTEM = (
                 "You are an expert data analyst. "
                 "Answer questions using ONLY the data context provided. "
@@ -579,9 +568,7 @@ else:
                         role = "User" if m["role"] == "user" else "Assistant"
                         history += f"\n{role}: {m['content']}"
 
-                    full_prompt = f"""{SYSTEM}
-
-Here is the relevant data extracted from the dataset:
+                    full_prompt = f"""Here is the relevant data extracted from the dataset:
 {context}
 
 Conversation so far:{history}
@@ -594,27 +581,9 @@ Answer using the data above. Be specific with numbers and values."""
                         st.markdown(typing_indicator(), unsafe_allow_html=True)
                         placeholder   = st.empty()
                         full_response = ""
-                        try:
-                            response = _gemini_client.models.generate_content(
-                                model="gemini-2.0-flash",
-                                contents=full_prompt,
-                            )
-                            full_response = response.text
-                        except Exception as gemini_err:
-                            err_str = str(gemini_err)
-                            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
-                                placeholder.markdown(
-                                    "⚠️ Gemini quota reached — switching to Groq…"
-                                )
-                                try:
-                                    for chunk in ai.generate_stream(full_prompt, system=SYSTEM):
-                                        full_response += chunk
-                                        placeholder.markdown(full_response + "▌")
-                                    full_response += "\n\n*— answered by Groq (Gemini quota reached)*"
-                                except Exception as groq_err:
-                                    full_response = f"❌ Both Gemini and Groq failed: {groq_err}"
-                            else:
-                                full_response = f"❌ Gemini error: {gemini_err}"
+                        for chunk in ai.generate_stream(full_prompt, system=SYSTEM):
+                            full_response += chunk
+                            placeholder.markdown(full_response + "▌")
                         placeholder.markdown(full_response)
 
                     st.session_state.chat_history.append(
