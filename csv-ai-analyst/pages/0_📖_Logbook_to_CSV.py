@@ -64,42 +64,67 @@ def extract_table_from_image(image_bytes: bytes, mime: str,
                               hint: str = "") -> str:
     """
     Send logbook page image to LLaMA 4 Scout.
-    Returns raw text extracted and structured as CSV rows.
+    Two-pass approach: first extract raw text, then structure it.
     """
     b64 = base64.b64encode(image_bytes).decode("utf-8")
-    hint_text = f"\nAdditional context about this logbook: {hint}" if hint else ""
+    hint_text = f"\nContext about this logbook: {hint}" if hint else ""
 
-    prompt = f"""You are an expert OCR and data extraction system.
+    # Pass 1 — extract raw text with maximum fidelity
+    ocr_prompt = f"""You are a highly accurate OCR system specializing in handwritten documents.{hint_text}
 
-This image contains a handwritten logbook page with tabular or structured data.{hint_text}
+Carefully read this handwritten logbook page and transcribe EVERY piece of text you can see.
+- Read left to right, top to bottom
+- Include all numbers, dates, names, and values exactly as written
+- Mark unclear text with [?]
+- Preserve the row/column structure using | as column separator
+- Include the header row if present
 
-Your task:
-1. Read ALL handwritten text carefully, including headers and every row of data.
-2. Identify the column headers (if present) or infer them from context.
-3. Extract every data row exactly as written.
-4. Return the data as valid CSV format ONLY — no explanation, no markdown, no code blocks.
-5. First line must be the header row.
-6. Use comma as delimiter.
-7. If a cell is empty or illegible, use empty string.
-8. Preserve numbers exactly as written (dates, amounts, quantities).
-
-Return ONLY the CSV data, nothing else."""
+Transcribe everything now:"""
 
     try:
-        resp = groq_client.chat.completions.create(
+        ocr_resp = groq_client.chat.completions.create(
             model=VISION_MODEL,
             messages=[{
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": prompt},
+                    {"type": "text", "text": ocr_prompt},
                     {"type": "image_url",
                      "image_url": {"url": f"data:{mime};base64,{b64}"}}
                 ]
             }],
             max_tokens=2048,
-            temperature=0.1,  # low temp for accuracy
+            temperature=0.05,
         )
-        return resp.choices[0].message.content.strip()
+        raw_text = ocr_resp.choices[0].message.content.strip()
+    except Exception as e:
+        return f"ERROR: {e}"
+
+    # Pass 2 — structure the raw text into clean CSV
+    structure_prompt = f"""You are a data structuring expert.{hint_text}
+
+Below is raw text extracted from a handwritten logbook page:
+
+{raw_text}
+
+Convert this into a clean, valid CSV file:
+- First row must be column headers (infer from context if not explicit)
+- Each subsequent row is one data record
+- Use comma as delimiter
+- Wrap values containing commas in double quotes
+- Replace [?] with empty string
+- Do NOT include any explanation, markdown, or code fences
+- Return ONLY the CSV data
+
+CSV output:"""
+
+    try:
+        struct_resp = groq_client.chat.completions.create(
+            model=VISION_MODEL,
+            messages=[{"role": "user", "content": structure_prompt}],
+            max_tokens=2048,
+            temperature=0.0,
+        )
+        return struct_resp.choices[0].message.content.strip()
     except Exception as e:
         return f"ERROR: {e}"
 
@@ -266,13 +291,24 @@ if st.button("▶️ Extract & Convert to CSV", type="primary",
     # Load into main app session
     st.markdown("---")
     st.subheader("🚀 Use this data directly in Sepiru AI")
-    if st.button("Load into Sepiru AI for analysis", use_container_width=True):
-        st.session_state["df"]       = display_df.copy()
-        st.session_state["clean_df"] = display_df.copy()
-        st.session_state["filename"] = "logbook_extracted.csv"
-        st.session_state["chat_history"] = []
-        st.success("✅ Data loaded! Go to the main page to start analyzing.")
-        st.balloons()
+    st.info("Click below to load this data into the main Sepiru AI app for analysis, chat, ML training, and more.")
+
+    if st.button("🚀 Load into Sepiru AI for analysis", use_container_width=True,
+                 type="primary", key="load_to_main"):
+        st.session_state["df"]            = display_df.copy()
+        st.session_state["clean_df"]      = display_df.copy()
+        st.session_state["filename"]      = "logbook_extracted.csv"
+        st.session_state["chat_history"]  = []
+        st.session_state["_logbook_ready"] = True
+        st.success("✅ Data loaded into Sepiru AI!")
+        st.markdown("""
+        <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);
+        border-radius:10px;padding:1rem;margin-top:.5rem;font-family:'DM Sans',sans-serif;
+        font-size:.88rem;color:#6ee7b7;line-height:1.7;">
+        ✅ Your logbook data is ready.<br>
+        👉 Click <strong>app</strong> in the left sidebar to go to the main page and start analyzing.
+        </div>
+        """, unsafe_allow_html=True)
 
     # Show raw text per page
     with st.expander("🔍 Raw extracted text per page"):
