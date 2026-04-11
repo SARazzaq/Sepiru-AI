@@ -221,24 +221,4 @@ def load_all_styles(base_path: str = "assets"):
     maintenance_gate()
 
     from src.animations import apex_motion_engine
-    st.markdown("""
-    <style>
-    /* Collapse iframe wrapper — animation runs fixed/fullscreen anyway */
-    iframe[title="st.iframe"] {
-        display:block!important;
-        height:1px!important;
-        min-height:0!important;
-        overflow:hidden!important;
-        margin:0!important;
-        padding:0!important;
-    }
-    div:has(> iframe[title="st.iframe"]) {
-        height:1px!important;
-        min-height:0!important;
-        margin:0!important;
-        padding:0!important;
-        overflow:hidden!important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
     st.iframe(apex_motion_engine(), height=1)

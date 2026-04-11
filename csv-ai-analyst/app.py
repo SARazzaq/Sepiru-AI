@@ -76,8 +76,7 @@ section[data-testid="stSidebar"] { min-width:280px !important; transform:transla
 </style>
 """, unsafe_allow_html=True)
 
-# ── Aurora background — height=1, CSS collapses the iframe wrapper ────────────
-st.iframe(aurora_background(), height=1)
+# ── Aurora background removed — animation embedded in header ─────────────────
 
 # ── Session state ─────────────────────────────────────────────────────────────
 DEFAULTS = {
@@ -91,11 +90,85 @@ for k, v in DEFAULTS.items():
         st.session_state[k] = v
 
 # ── Header ────────────────────────────────────────────────────────────────────
+# ── Header with embedded animation canvas ────────────────────────────────────
 st.markdown("""
-<div class='app-header'>
-    <h1>Sepiru <span>AI</span></h1>
-    <p>Your data has a story &nbsp;·&nbsp; We make it speak</p>
+<div class='app-header' style="position:relative;overflow:hidden;">
+    <canvas id="_hcv" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.7;"></canvas>
+    <div style="position:relative;z-index:1;">
+        <h1>Sepiru <span>AI</span></h1>
+        <p>Your data has a story &nbsp;·&nbsp; We make it speak</p>
+    </div>
 </div>
+<script>
+(function(){
+    const cv=document.getElementById('_hcv');
+    if(!cv)return;
+    const cx=cv.getContext('2d');
+    let W,H,pts,mx=9999,my=9999;
+    function resize(){
+        const r=cv.parentElement.getBoundingClientRect();
+        W=cv.width=r.width||800;H=cv.height=r.height||200;
+    }
+    resize();
+    window.addEventListener('resize',resize);
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    const BLOBS=[
+        {x:.5,y:-.1,rx:.9,ry:.7,h:42,s:80,a:.18,sp:.0002,ph:0},
+        {x:.1,y:.9,rx:.6,ry:.5,h:258,s:70,a:.1,sp:.0003,ph:2.1},
+        {x:.9,y:.8,rx:.5,ry:.4,h:162,s:65,a:.08,sp:.0004,ph:4.2},
+    ];
+    function initPts(){
+        const N=Math.floor(W*H/4000);
+        pts=Array.from({length:N},()=>({
+            x:Math.random()*W,y:Math.random()*H,
+            vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,
+            r:Math.random()*1.8+.4,ph:Math.random()*Math.PI*2,
+            spd:.012+Math.random()*.02,
+        }));
+    }
+    initPts();window.addEventListener('resize',()=>{resize();initPts();});
+    let t=0;
+    function draw(){
+        requestAnimationFrame(draw);cx.clearRect(0,0,W,H);t+=.007;
+        BLOBS.forEach(b=>{
+            const ox=Math.sin(t*b.sp*1000+b.ph)*.06;
+            const oy=Math.cos(t*b.sp*800+b.ph)*.04;
+            const px=(b.x+ox)*W,py=(b.y+oy)*H;
+            const a=b.a*(.6+Math.sin(t+b.ph)*.4);
+            const g=cx.createRadialGradient(px,py,0,px,py,Math.max(W,H)*b.rx);
+            g.addColorStop(0,`hsla(${b.h},${b.s}%,60%,${a})`);
+            g.addColorStop(.5,`hsla(${b.h},${b.s}%,40%,${a*.4})`);
+            g.addColorStop(1,'transparent');
+            cx.fillStyle=g;cx.fillRect(0,0,W,H);
+        });
+        for(let i=0;i<pts.length;i++){
+            const a=pts[i];
+            for(let j=i+1;j<pts.length;j++){
+                const b=pts[j];
+                const dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy;
+                if(d2<90*90){
+                    cx.beginPath();
+                    cx.strokeStyle=`rgba(201,168,76,${.12*(1-Math.sqrt(d2)/90)})`;
+                    cx.lineWidth=.4;cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke();
+                }
+            }
+        }
+        for(const p of pts){
+            p.ph+=p.spd;
+            const g=.45+Math.sin(p.ph)*.3;
+            const dx=p.x-mx,dy=p.y-my,d2=dx*dx+dy*dy;
+            if(d2<6400){const d=Math.sqrt(d2);const f=(80-d)/80*.4;p.vx+=dx/d*f;p.vy+=dy/d*f;}
+            p.vx*=.992;p.vy*=.992;
+            cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            cx.fillStyle=`rgba(201,168,76,${g})`;cx.fill();
+            p.x+=p.vx;p.y+=p.vy;
+            if(p.x<-5)p.x=W+5;if(p.x>W+5)p.x=-5;
+            if(p.y<-5)p.y=H+5;if(p.y>H+5)p.y=-5;
+        }
+    }
+    draw();
+})();
+</script>
 """, unsafe_allow_html=True)
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
