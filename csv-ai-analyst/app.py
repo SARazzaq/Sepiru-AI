@@ -746,8 +746,8 @@ Answer using the data above. Be specific with numbers and values."""
                                 full_response = f"❌ Error: {_ge2}"
 
                         placeholder.markdown(full_response)
-                        if used_model != "Groq":
-                            st.caption(f"✦ Answered by {used_model}")
+                        if used_model == "Groq" and not _gemini_ok:
+                            st.caption("ℹ️ Gemini quota reached — answered by Groq")
 
                     st.session_state.chat_history.append(
                         {"role": "assistant", "content": full_response}
