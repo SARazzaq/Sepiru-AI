@@ -200,7 +200,16 @@ def require_auth():
                             label_visibility="collapsed", key="_cap")
 
         # Honeypot — rendered after answer, hidden by CSS
+        # Label visible to confused users, field hidden off-screen
+        st.markdown("""
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:.6rem;
+        color:rgba(201,168,76,.35);letter-spacing:2px;text-transform:uppercase;
+        margin-top:.8rem;margin-bottom:.3rem;">
+        ✦ Security field — humans can skip this
+        </div>
+        """, unsafe_allow_html=True)
         hp = st.text_input("_hp", value="",
+                           placeholder="Leave empty — humans skip this",
                            label_visibility="collapsed", key="_hp")
 
         c1, c2 = st.columns(2)

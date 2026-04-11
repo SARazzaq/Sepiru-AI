@@ -90,85 +90,142 @@ for k, v in DEFAULTS.items():
         st.session_state[k] = v
 
 # ── Header ────────────────────────────────────────────────────────────────────
-# ── Header with embedded animation canvas ────────────────────────────────────
+# ── Header with CSS animated background ──────────────────────────────────────
 st.markdown("""
-<div class='app-header' style="position:relative;overflow:hidden;">
-    <canvas id="_hcv" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.7;"></canvas>
-    <div style="position:relative;z-index:1;">
-        <h1>Sepiru <span>AI</span></h1>
-        <p>Your data has a story &nbsp;·&nbsp; We make it speak</p>
+<style>
+@keyframes _auroraMove1 {
+    0%,100%{transform:translate(0,0) scale(1);}
+    33%{transform:translate(3%,2%) scale(1.05);}
+    66%{transform:translate(-2%,3%) scale(.97);}
+}
+@keyframes _auroraMove2 {
+    0%,100%{transform:translate(0,0) scale(1);}
+    33%{transform:translate(-4%,-2%) scale(1.08);}
+    66%{transform:translate(3%,-3%) scale(.95);}
+}
+@keyframes _auroraMove3 {
+    0%,100%{transform:translate(0,0) scale(1);}
+    50%{transform:translate(2%,4%) scale(1.06);}
+}
+@keyframes _particleDrift {
+    0%{transform:translateY(0) translateX(0);opacity:0;}
+    10%{opacity:1;}
+    90%{opacity:1;}
+    100%{transform:translateY(-120px) translateX(40px);opacity:0;}
+}
+@keyframes _particleDrift2 {
+    0%{transform:translateY(0) translateX(0);opacity:0;}
+    10%{opacity:.7;}
+    90%{opacity:.7;}
+    100%{transform:translateY(-80px) translateX(-30px);opacity:0;}
+}
+
+.sep-header-wrap {
+    position:relative;
+    background:linear-gradient(160deg,#0c0c20 0%,#080818 50%,#0c0c20 100%);
+    border-radius:28px;
+    padding:4.5rem 3.5rem 3.5rem;
+    text-align:center;
+    margin-bottom:2.5rem;
+    overflow:hidden;
+    isolation:isolate;
+    border:1px solid rgba(201,168,76,.18);
+}
+
+/* Gold top line */
+.sep-header-wrap::before {
+    content:'';position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(201,168,76,.2) 20%,
+        rgba(248,230,140,.9) 50%,rgba(201,168,76,.2) 80%,transparent);
+}
+
+/* Aurora blob 1 — gold */
+.sep-aurora-1 {
+    position:absolute;top:-40%;left:20%;
+    width:70%;height:120%;
+    background:radial-gradient(ellipse,rgba(201,168,76,.18) 0%,transparent 65%);
+    animation:_auroraMove1 8s ease-in-out infinite;
+    pointer-events:none;z-index:0;
+}
+/* Aurora blob 2 — indigo */
+.sep-aurora-2 {
+    position:absolute;bottom:-30%;right:-10%;
+    width:55%;height:100%;
+    background:radial-gradient(ellipse,rgba(99,102,241,.1) 0%,transparent 60%);
+    animation:_auroraMove2 11s ease-in-out infinite;
+    pointer-events:none;z-index:0;
+}
+/* Aurora blob 3 — emerald */
+.sep-aurora-3 {
+    position:absolute;top:10%;left:-10%;
+    width:45%;height:80%;
+    background:radial-gradient(ellipse,rgba(16,185,129,.07) 0%,transparent 60%);
+    animation:_auroraMove3 9s ease-in-out infinite;
+    pointer-events:none;z-index:0;
+}
+
+/* Floating particles */
+.sep-p { position:absolute;border-radius:50%;pointer-events:none;z-index:0; }
+.sep-p1{width:3px;height:3px;background:rgba(201,168,76,.7);left:15%;bottom:20%;
+    animation:_particleDrift 4s ease-in-out infinite;}
+.sep-p2{width:2px;height:2px;background:rgba(201,168,76,.5);left:35%;bottom:10%;
+    animation:_particleDrift 5.5s ease-in-out 1s infinite;}
+.sep-p3{width:4px;height:4px;background:rgba(201,168,76,.6);left:55%;bottom:15%;
+    animation:_particleDrift2 4.8s ease-in-out .5s infinite;}
+.sep-p4{width:2px;height:2px;background:rgba(201,168,76,.4);left:70%;bottom:25%;
+    animation:_particleDrift 6s ease-in-out 2s infinite;}
+.sep-p5{width:3px;height:3px;background:rgba(99,102,241,.5);left:80%;bottom:10%;
+    animation:_particleDrift2 5s ease-in-out 1.5s infinite;}
+.sep-p6{width:2px;height:2px;background:rgba(16,185,129,.5);left:25%;bottom:30%;
+    animation:_particleDrift 7s ease-in-out .8s infinite;}
+.sep-p7{width:3px;height:3px;background:rgba(201,168,76,.6);left:90%;bottom:20%;
+    animation:_particleDrift2 4.2s ease-in-out 3s infinite;}
+.sep-p8{width:2px;height:2px;background:rgba(201,168,76,.4);left:45%;bottom:5%;
+    animation:_particleDrift 5.8s ease-in-out 2.5s infinite;}
+
+/* Scan line */
+.sep-scan {
+    position:absolute;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent);
+    animation:scanLine 6s linear infinite;
+    pointer-events:none;z-index:0;
+}
+@keyframes scanLine {
+    0%{top:-2px;opacity:0;}8%{opacity:.8;}92%{opacity:.8;}100%{top:102%;opacity:0;}
+}
+
+/* Content above all layers */
+.sep-header-content { position:relative;z-index:2; }
+</style>
+
+<div class="sep-header-wrap">
+    <div class="sep-aurora-1"></div>
+    <div class="sep-aurora-2"></div>
+    <div class="sep-aurora-3"></div>
+    <div class="sep-scan"></div>
+    <div class="sep-p sep-p1"></div>
+    <div class="sep-p sep-p2"></div>
+    <div class="sep-p sep-p3"></div>
+    <div class="sep-p sep-p4"></div>
+    <div class="sep-p sep-p5"></div>
+    <div class="sep-p sep-p6"></div>
+    <div class="sep-p sep-p7"></div>
+    <div class="sep-p sep-p8"></div>
+    <div class="sep-header-content">
+        <h1 class="app-header" style="font-family:'Cormorant Garamond',serif;
+            font-size:clamp(3rem,6vw,5rem);font-weight:300;font-style:italic;
+            background:linear-gradient(135deg,#fff 0%,#f5e080 25%,#c9a84c 55%,#f5e8b8 80%,#fff 100%);
+            background-size:200% auto;
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+            animation:goldShift 4s linear infinite;margin:0 0 .8rem;line-height:1;">
+            Sepiru AI
+        </h1>
+        <p style="font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:400;
+            color:rgba(255,255,255,.35);letter-spacing:4px;text-transform:uppercase;margin:0;">
+            Your data has a story &nbsp;·&nbsp; We make it speak
+        </p>
     </div>
 </div>
-<script>
-(function(){
-    const cv=document.getElementById('_hcv');
-    if(!cv)return;
-    const cx=cv.getContext('2d');
-    let W,H,pts,mx=9999,my=9999;
-    function resize(){
-        const r=cv.parentElement.getBoundingClientRect();
-        W=cv.width=r.width||800;H=cv.height=r.height||200;
-    }
-    resize();
-    window.addEventListener('resize',resize);
-    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
-    const BLOBS=[
-        {x:.5,y:-.1,rx:.9,ry:.7,h:42,s:80,a:.18,sp:.0002,ph:0},
-        {x:.1,y:.9,rx:.6,ry:.5,h:258,s:70,a:.1,sp:.0003,ph:2.1},
-        {x:.9,y:.8,rx:.5,ry:.4,h:162,s:65,a:.08,sp:.0004,ph:4.2},
-    ];
-    function initPts(){
-        const N=Math.floor(W*H/4000);
-        pts=Array.from({length:N},()=>({
-            x:Math.random()*W,y:Math.random()*H,
-            vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,
-            r:Math.random()*1.8+.4,ph:Math.random()*Math.PI*2,
-            spd:.012+Math.random()*.02,
-        }));
-    }
-    initPts();window.addEventListener('resize',()=>{resize();initPts();});
-    let t=0;
-    function draw(){
-        requestAnimationFrame(draw);cx.clearRect(0,0,W,H);t+=.007;
-        BLOBS.forEach(b=>{
-            const ox=Math.sin(t*b.sp*1000+b.ph)*.06;
-            const oy=Math.cos(t*b.sp*800+b.ph)*.04;
-            const px=(b.x+ox)*W,py=(b.y+oy)*H;
-            const a=b.a*(.6+Math.sin(t+b.ph)*.4);
-            const g=cx.createRadialGradient(px,py,0,px,py,Math.max(W,H)*b.rx);
-            g.addColorStop(0,`hsla(${b.h},${b.s}%,60%,${a})`);
-            g.addColorStop(.5,`hsla(${b.h},${b.s}%,40%,${a*.4})`);
-            g.addColorStop(1,'transparent');
-            cx.fillStyle=g;cx.fillRect(0,0,W,H);
-        });
-        for(let i=0;i<pts.length;i++){
-            const a=pts[i];
-            for(let j=i+1;j<pts.length;j++){
-                const b=pts[j];
-                const dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy;
-                if(d2<90*90){
-                    cx.beginPath();
-                    cx.strokeStyle=`rgba(201,168,76,${.12*(1-Math.sqrt(d2)/90)})`;
-                    cx.lineWidth=.4;cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke();
-                }
-            }
-        }
-        for(const p of pts){
-            p.ph+=p.spd;
-            const g=.45+Math.sin(p.ph)*.3;
-            const dx=p.x-mx,dy=p.y-my,d2=dx*dx+dy*dy;
-            if(d2<6400){const d=Math.sqrt(d2);const f=(80-d)/80*.4;p.vx+=dx/d*f;p.vy+=dy/d*f;}
-            p.vx*=.992;p.vy*=.992;
-            cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);
-            cx.fillStyle=`rgba(201,168,76,${g})`;cx.fill();
-            p.x+=p.vx;p.y+=p.vy;
-            if(p.x<-5)p.x=W+5;if(p.x>W+5)p.x=-5;
-            if(p.y<-5)p.y=H+5;if(p.y>H+5)p.y=-5;
-        }
-    }
-    draw();
-})();
-</script>
 """, unsafe_allow_html=True)
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
