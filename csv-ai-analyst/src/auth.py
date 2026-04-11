@@ -8,6 +8,7 @@ Sepiru AI — Security Gate.
 - All free, lifetime.
 """
 import os
+import re
 import random
 import time
 import streamlit as st

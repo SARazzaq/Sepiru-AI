@@ -9,7 +9,6 @@ from src.auth import require_auth
 from src.quota_guard import can_proceed, get_usage, reset_time_utc, maintenance_gate
 from src.smart_context import extract_relevant_context
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
 import plotly.express as px
 import io
@@ -78,7 +77,7 @@ section[data-testid="stSidebar"] { min-width:280px !important; transform:transla
 """, unsafe_allow_html=True)
 
 # ── Aurora background ─────────────────────────────────────────────────────────
-components.html(aurora_background(), height=1, scrolling=False)
+st.iframe(aurora_background(), height=1, scrolling=False)
 
 # ── Session state ─────────────────────────────────────────────────────────────
 DEFAULTS = {

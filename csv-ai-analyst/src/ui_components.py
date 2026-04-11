@@ -195,7 +195,6 @@ def toast(title: str, message: str, icon: str = "✦") -> str:
 # ── CSS + Motion loader ───────────────────────────────────────────────────────
 def load_all_styles(base_path: str = "assets"):
     """Load all CSS + inject cursor and animations on every page."""
-    import streamlit.components.v1 as components
     from pathlib import Path
 
     # Resolve absolute path — works from any working directory
@@ -222,4 +221,4 @@ def load_all_styles(base_path: str = "assets"):
     maintenance_gate()
 
     from src.animations import apex_motion_engine
-    components.html(apex_motion_engine(), height=0, scrolling=False)
+    st.iframe(apex_motion_engine(), height=0, scrolling=False)
