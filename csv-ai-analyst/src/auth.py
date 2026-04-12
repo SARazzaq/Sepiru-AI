@@ -145,6 +145,15 @@ def require_auth():
         box-shadow:0 0 0 3px rgba(201,168,76,.08)!important;outline:none!important;}}
     .stTextInput>div>div>input::placeholder{{color:rgba(255,255,255,.1)!important;letter-spacing:5px!important;}}
 
+    /* Block browser autofill on all inputs */
+    .stTextInput>div>div>input:-webkit-autofill,
+    .stTextInput>div>div>input:-webkit-autofill:hover,
+    .stTextInput>div>div>input:-webkit-autofill:focus {{
+        -webkit-box-shadow:0 0 0 1000px rgba(12,12,32,.97) inset!important;
+        -webkit-text-fill-color:#fff!important;
+        caret-color:#c9a84c!important;
+    }}
+
     .stButton>button{{background:linear-gradient(135deg,#c9a84c 0%,#f5e080 50%,#c9a84c 100%)!important;
         background-size:200% auto!important;color:#000!important;border:none!important;
         border-radius:10px!important;font-family:'Space Grotesk',sans-serif!important;
@@ -197,10 +206,11 @@ def require_auth():
 
         # Answer input
         cap = st.text_input("ans", placeholder="Answer",
-                            label_visibility="collapsed", key="_cap")
+                            label_visibility="collapsed", key="_cap",
+                            autocomplete="off")
 
-        # Honeypot — rendered after answer, hidden by CSS
-        # Label visible to confused users, field hidden off-screen
+        # Honeypot — hidden off-screen, autocomplete disabled
+        # Browser autofill must not touch this field
         st.markdown("""
         <div style="font-family:'Space Grotesk',sans-serif;font-size:.6rem;
         color:rgba(201,168,76,.35);letter-spacing:2px;text-transform:uppercase;
@@ -210,7 +220,8 @@ def require_auth():
         """, unsafe_allow_html=True)
         hp = st.text_input("_hp", value="",
                            placeholder="Leave empty — humans skip this",
-                           label_visibility="collapsed", key="_hp")
+                           label_visibility="collapsed", key="_hp",
+                           autocomplete="off")
 
         c1, c2 = st.columns(2)
         with c1:
