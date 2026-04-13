@@ -46,3 +46,14 @@ Powered by **Google Gemini 2.0 Flash** as the primary intelligence engine, with 
 | **SDG 10** — Reduced Inequalities | Gives a street vendor in Mumbai the same analytical power as a Fortune 500 analyst — for free |
 
 ---
+
+## 🚀 Quick Start
+
+```bash
+git clone https://github.com/SARazzaq/Sepiru-AI
+cd Sepiru-AI
+pip install -r requirements.txt
+# Get free key from aistudio.google.com and console.groq.com
+# Add the key in .env file
+streamlit run app.py
+```
