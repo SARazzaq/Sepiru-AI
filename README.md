@@ -12,7 +12,7 @@
 
 <br/>
 
-> **400 million people have data — but not the money, language, or tools to understand it.**
+> **Millions of people have data — but not the money, language, or tools to understand it.**
 > Sepiru AI changes that. Free. Private. In 14 languages. For everyone.
 
 <br/>
@@ -23,7 +23,7 @@
 
 ## The Problem
 
-Every day, 400 million small business owners, farmers, NGO workers, and educators make decisions that affect their livelihoods — based on gut feeling, not evidence. Not because the data doesn't exist. Because the tools to understand it cost $70/month, demand technical training, assume English, and store confidential data on servers they don't control. The global analytics market is worth $274 billion, yet 80% of the world is completely locked out.
+Every day, millions of small business owners, farmers, NGO workers, and educators make decisions that affect their livelihoods — based on gut feeling, not evidence. Not because the data doesn't exist. Because the tools to understand it cost huge money, demand technical training, assume English, and store confidential data on servers they don't control. The global analytics market is worth billions of dollar, yet 80% of the world is completely locked out.
 
 This is not a technology gap. It is a human crisis.
 
