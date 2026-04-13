@@ -46,10 +46,3 @@ Powered by **Google Gemini 2.0 Flash** as the primary intelligence engine, with 
 | **SDG 10** — Reduced Inequalities | Gives a street vendor in Mumbai the same analytical power as a Fortune 500 analyst — for free |
 
 ---
-
-## Features
-
-| # | Feature | Description |
-|---|---------|-------------|
-| 1 | **Conversational Data Chat** | Ask anything about your data in plain language — powered by Google Gemini 2.0 Flash with Groq fallback |
-| 2 | **ML Model Training** | Auto-detects classification
